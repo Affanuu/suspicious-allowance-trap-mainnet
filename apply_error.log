@@ -1,0 +1,15 @@
+[38;2;255;105;0m
+ _____     ______     ______     ______     ______     ______     ______   
+/\  __-.  /\  == \   /\  __ \   /\  ___\   /\  ___\   /\  == \   /\  __ \  
+\ \ \/\ \ \ \  __<   \ \ \/\ \  \ \___  \  \ \  __\   \ \  __<   \ \  __ \ 
+ \ \____-  \ \_\ \_\  \ \_____\  \/\_____\  \ \_____\  \ \_\ \_\  \ \_\ \_\
+  \/____/   \/_/ /_/   \/_____/   \/_____/   \/_____/   \/_/ /_/   \/_/\/_/                                                                                                                                                                                             
+[39m
+Response function verified ✅
+
+Error: Apply config failed
+
+Caused by:
+    0: Failed to plan config
+    1: Failed to make eth_call
+    2: server returned an error response: error code 3: execution reverted
