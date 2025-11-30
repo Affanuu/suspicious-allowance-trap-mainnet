@@ -9,11 +9,9 @@ contract ResponseContract {
         uint256 currentAllowance
     );
 
-    /// @notice Executed by Drosera when trap triggers
-    /// @param owner Wallet that granted the allowance
-    /// @param spender Contract that received approval
-    /// @param previousAllowance Previous allowance amount
-    /// @param currentAllowance New allowance amount
+    /// @notice Called by Drosera when trap triggers
+    /// @dev Signature MUST match response_function in drosera.toml
+    /// @dev Parameters MUST match shouldRespond() return data encoding
     function executeAllowance(
         address owner,
         address spender,
