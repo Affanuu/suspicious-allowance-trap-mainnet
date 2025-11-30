@@ -1,0 +1,41 @@
+# Compiler outputs
+cache/
+out/
+artifacts/
+
+# Broadcasts (may contain sensitive data)
+broadcast/
+
+# Environment variables (NEVER commit this!)
+.env
+.env.*
+
+# Node modules
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Foundry
+lib/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Lock files
+package-lock.json
+yarn.lock
