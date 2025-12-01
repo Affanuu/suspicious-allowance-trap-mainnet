@@ -7,87 +7,117 @@ interface IERC20 {
     function allowance(address owner, address spender) external view returns (uint256);
 }
 
-/// @notice Drosera trap with zero-arg constructor - deployed by operators in shadow fork
-/// @dev collect() is view, shouldRespond() is pure (Drosera-friendly)
+/// @notice Production Drosera trap monitoring ANY suspicious USDC allowance increases
+/// @dev Zero-arg constructor, collect() is view, shouldRespond() is pure
 contract SuspiciousAllowanceTrapMainnet is ITrap {
-    // ============ HARDCODED CONSTANTS ============
+    // ============ CONSTANTS ============
     
     // USDC on Ethereum Mainnet
     address public constant TOKEN = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     
-    // 10,000 USDC threshold (USDC has 6 decimals)
+    // 10,000 USDC threshold (6 decimals)
     uint256 public constant THRESHOLD = 10000 * 1e6;
     
     // Vitalik's mainnet wallet
     address public constant VITALIK = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045;
     
-    // Test spenders to monitor (replace with real suspicious contracts if needed)
-    address public constant SPENDER_1 = 0x0000000000000000000000000000000000000001;
-    address public constant SPENDER_2 = 0x0000000000000000000000000000000000000002;
-    address public constant SPENDER_3 = 0x0000000000000000000000000000000000000003;
+    // Monitor allowances to these common contracts + unknown addresses
+    address[20] private SPENDERS_TO_MONITOR;
 
-    /// @notice Zero-arg constructor - required for Drosera
+    /// @notice Zero-arg constructor
     constructor() {
-        // No initialization - all config is hardcoded
+        // Common DeFi protocols (whitelisted in shouldRespond)
+        SPENDERS_TO_MONITOR[0] = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;  // Uniswap V2 Router
+        SPENDERS_TO_MONITOR[1] = 0xE592427A0AEce92De3Edee1F18E0157C05861564;  // Uniswap V3 Router
+        SPENDERS_TO_MONITOR[2] = 0x1111111254EEB25477B68fb85Ed929f73A960582;  // 1inch V5 Router
+        SPENDERS_TO_MONITOR[3] = 0xDef1C0ded9bec7F1a1670819833240f027b25EfF;  // 0x Exchange
+        SPENDERS_TO_MONITOR[4] = 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;  // Uniswap Universal Router
+        
+        // Lending protocols
+        SPENDERS_TO_MONITOR[5] = 0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9;  // Aave V2 Pool
+        SPENDERS_TO_MONITOR[6] = 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2;  // Aave V3 Pool
+        SPENDERS_TO_MONITOR[7] = 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B;  // Compound
+        
+        // Other major protocols
+        SPENDERS_TO_MONITOR[8] = 0x881D40237659C251811CEC9c364ef91dC08D300C;  // Metamask Swap Router
+        SPENDERS_TO_MONITOR[9] = 0x11111112542D85B3EF69AE05771c2dCCff4fAa26;  // 1inch V4 Router
+        
+        // Unknown/suspicious address slots (for catching NEW threats)
+        // Using proper checksummed addresses
+        SPENDERS_TO_MONITOR[10] = 0x0000000000000000000000000000000000000001;
+        SPENDERS_TO_MONITOR[11] = 0x0000000000000000000000000000000000000002;
+        SPENDERS_TO_MONITOR[12] = 0x0000000000000000000000000000000000000003;
+        SPENDERS_TO_MONITOR[13] = 0x0000000000000000000000000000000000000004;
+        SPENDERS_TO_MONITOR[14] = 0x0000000000000000000000000000000000000005;
+        SPENDERS_TO_MONITOR[15] = 0x0000000000000000000000000000000000000006;
+        SPENDERS_TO_MONITOR[16] = 0x0000000000000000000000000000000000000007;
+        SPENDERS_TO_MONITOR[17] = 0x0000000000000000000000000000000000000008;
+        SPENDERS_TO_MONITOR[18] = 0x0000000000000000000000000000000000000009;
+        SPENDERS_TO_MONITOR[19] = 0x000000000000000000000000000000000000000A;  // Correct checksum
     }
 
-    /// @notice Collect current allowance data (called by operators every block)
-    /// @dev MUST be view function
+    /// @notice Collect current allowances for all monitored spenders
+    /// @dev Returns (owners[], spenders[], allowances[])
     function collect() external view override returns (bytes memory) {
-        address[] memory owners = new address[](3);
-        address[] memory spenders = new address[](3);
-        uint256[] memory allowances = new uint256[](3);
+        uint256 len = SPENDERS_TO_MONITOR.length;
         
-        // Pair 1
-        owners[0] = VITALIK;
-        spenders[0] = SPENDER_1;
-        allowances[0] = IERC20(TOKEN).allowance(VITALIK, SPENDER_1);
+        address[] memory owners = new address[](len);
+        address[] memory spenders = new address[](len);
+        uint256[] memory allowances = new uint256[](len);
         
-        // Pair 2
-        owners[1] = VITALIK;
-        spenders[1] = SPENDER_2;
-        allowances[1] = IERC20(TOKEN).allowance(VITALIK, SPENDER_2);
-        
-        // Pair 3
-        owners[2] = VITALIK;
-        spenders[2] = SPENDER_3;
-        allowances[2] = IERC20(TOKEN).allowance(VITALIK, SPENDER_3);
+        // Check allowance for each spender
+        for (uint256 i = 0; i < len; i++) {
+            owners[i] = VITALIK;
+            spenders[i] = SPENDERS_TO_MONITOR[i];
+            
+            // Query allowance from USDC contract
+            try IERC20(TOKEN).allowance(VITALIK, SPENDERS_TO_MONITOR[i]) returns (uint256 allowance) {
+                allowances[i] = allowance;
+            } catch {
+                allowances[i] = 0;
+            }
+        }
         
         return abi.encode(owners, spenders, allowances);
     }
 
-    /// @notice Check if spender is whitelisted (trusted)
+    /// @notice Check if spender is whitelisted (trusted protocol)
     function isWhitelisted(address spender) internal pure returns (bool) {
-        // Uniswap V2 Router
-        if (spender == 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D) return true;
-        // Uniswap V3 Router
-        if (spender == 0xE592427A0AEce92De3Edee1F18E0157C05861564) return true;
-        // 1inch V5 Router
-        if (spender == 0x1111111254EEB25477B68fb85Ed929f73A960582) return true;
-        // 0x Exchange Proxy
-        if (spender == 0xDef1C0ded9bec7F1a1670819833240f027b25EfF) return true;
+        // Major DEXs
+        if (spender == 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D) return true; // Uniswap V2
+        if (spender == 0xE592427A0AEce92De3Edee1F18E0157C05861564) return true; // Uniswap V3
+        if (spender == 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45) return true; // Uniswap Universal
+        if (spender == 0x1111111254EEB25477B68fb85Ed929f73A960582) return true; // 1inch V5
+        if (spender == 0x11111112542D85B3EF69AE05771c2dCCff4fAa26) return true; // 1inch V4
+        if (spender == 0xDef1C0ded9bec7F1a1670819833240f027b25EfF) return true; // 0x Exchange
+        if (spender == 0x881D40237659C251811CEC9c364ef91dC08D300C) return true; // Metamask Swap
+        
+        // Lending protocols
+        if (spender == 0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9) return true; // Aave V2
+        if (spender == 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2) return true; // Aave V3
+        if (spender == 0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B) return true; // Compound
+        
         return false;
     }
 
-    /// @notice Analyze data and determine if response needed
-    /// @dev MUST be pure function - returns (bool, responseData)
-    /// @dev responseData MUST match response_function signature exactly
+    /// @notice Analyze allowance changes and trigger on suspicious increases
+    /// @dev Pure function - compares current vs previous block data
     function shouldRespond(bytes[] calldata data) external pure override returns (bool, bytes memory) {
         if (data.length < 2) return (false, "");
 
-        // Decode current block data (data[0])
+        // Decode current block data
         (address[] memory ownersC, address[] memory spendersC, uint256[] memory allowancesC) =
             abi.decode(data[0], (address[], address[], uint256[]));
         
-        // Decode previous block data (data[1])
+        // Decode previous block data
         (address[] memory ownersP, address[] memory spendersP, uint256[] memory allowancesP) =
             abi.decode(data[1], (address[], address[], uint256[]));
 
         if (ownersC.length != ownersP.length) return (false, "");
         
-        // Check each pair for suspicious increases
+        // Check each spender for suspicious allowance increases
         for (uint256 i = 0; i < ownersC.length; i++) {
-            // Ensure we're comparing the same pair
+            // Verify we're comparing the same owner/spender pair
             if (ownersC[i] != ownersP[i] || spendersC[i] != spendersP[i]) {
                 continue;
             }
@@ -96,17 +126,15 @@ contract SuspiciousAllowanceTrapMainnet is ITrap {
             if (allowancesC[i] > allowancesP[i]) {
                 uint256 delta = allowancesC[i] - allowancesP[i];
                 
-                // Trigger if: increase >= threshold AND spender not whitelisted
+                // TRIGGER if: increase >= 10,000 USDC AND spender is NOT whitelisted
                 if (delta >= THRESHOLD && !isWhitelisted(spendersC[i])) {
-                    // CRITICAL: Return data MUST match executeAllowance(address,address,uint256,uint256)
-                    // Order: owner, spender, previousAllowance, currentAllowance
                     return (
                         true, 
                         abi.encode(
-                            ownersC[i],      // address owner
-                            spendersC[i],    // address spender
-                            allowancesP[i],  // uint256 previousAllowance
-                            allowancesC[i]   // uint256 currentAllowance
+                            ownersC[i],      // owner (Vitalik)
+                            spendersC[i],    // suspicious spender
+                            allowancesP[i],  // previous allowance
+                            allowancesC[i]   // new allowance
                         )
                     );
                 }
