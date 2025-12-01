@@ -1,57 +1,32 @@
-# Suspicious Allowance Trap 🛡️
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Foundry](https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg)](https://getfoundry.sh/)
-[![Solidity](https://img.shields.io/badge/Solidity-^0.8.20-363636?logo=solidity)](https://docs.soliditylang.org/)
-[![Drosera Compliant](https://img.shields.io/badge/Drosera-Compliant-success.svg)]()
-[![Network](https://img.shields.io/badge/Network-Ethereum%20Mainnet-blue.svg)]()
+# Suspicious Allowance Trap Mainnet
 
 > Production-ready Drosera security trap monitoring ANY suspicious USDC allowance increases on Ethereum mainnet.
 
-## 🎯 What It Does
+## What does the trap does
 
-Monitors Vitalik Buterin's wallet for **ANY** suspicious USDC approval increases:
-- ✅ Tracks 20 common DeFi contracts + unknown addresses
-- ✅ Alerts on approvals ≥10,000 USDC to non-whitelisted spenders
-- ✅ Catches phishing attacks, compromised wallets, and malicious approvals
-- ✅ Real-time detection with zero-arg constructor design
+This Trap is designed Monitors Vitalik Buterin's wallet for **ANY** suspicious USDC approval increases:
+-  Tracks common DeFi contracts + unknown addresses
+-  Alerts on approvals ≥10,000 USDC to non-whitelisted spenders
+-  Catches phishing attacks, compromised wallets, and malicious approvals
+-  Real-time detection
 
-## 🏗️ Architecture
+## How the trap works
 ```
-Drosera Operators (Shadow Fork)
-  └─ Deploy trap every block with zero args
-  └─ Call collect() → Check 20 spender allowances
+Drosera Operators
+  └─ Deploy trap every block
+  └─ Call collect() → Check spender allowances
   └─ Call shouldRespond() → Detect suspicious increases
   └─ Trigger response if alert threshold exceeded
-       └─ Call executeAllowance() on mainnet
+       └─ Call executeAllowance() on Ethereum mainnet
             └─ Emit SuspiciousAllowanceDetected event
 ```
-
-## 📋 Deployed Contracts
-
-| Contract | Address | Network |
-|----------|---------|---------|
-| **Response Contract** | `0x9650910581cBbFa4f9B1E55d14339DDeAdC88d5C` | Ethereum Mainnet |
-| **Drosera Network** | `0x01C344b8406c3237a6b9dbd06ef2832142866d87` | Ethereum Mainnet |
-
-**Note:** Trap contract is NOT deployed on-chain. Operators run it in shadow fork.
-
-## 🔧 Features
-
-### Production Ready
-- ✅ Zero-arg constructor (Drosera compliant)
-- ✅ `collect()` is `view`
-- ✅ `shouldRespond()` is `pure`
-- ✅ No MockERC20 or test dependencies
-- ✅ All configuration hardcoded
 
 ### Monitoring
 - **Token:** USDC (`0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`)
 - **Wallet:** Vitalik Buterin (`0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`)
 - **Threshold:** 10,000 USDC
-- **Spenders:** 20 addresses (10 major DeFi + 10 unknown)
 
-### Whitelisted (No Alerts)
+### Whitelisted address on the trap (No Alerts)
 - Uniswap V2, V3, Universal Router
 - 1inch V4, V5
 - 0x Exchange
