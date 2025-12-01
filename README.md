@@ -13,7 +13,7 @@ This Trap is designed to Monitors Vitalik Buterin's wallet for **ANY** suspiciou
 ## How the trap works
 ```
 Drosera Operators
-  └─ Deploy trap every block
+  └─ Deploy trap every block (shadow fork)
   └─ Call collect() → Check spender allowances
   └─ Call shouldRespond() → Detect suspicious increases
   └─ Trigger response if alert threshold exceeded
