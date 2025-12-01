@@ -1,27 +1,16 @@
-# Ethereum Mainnet RPC
-ethereum_rpc = "https://eth-mainnet.g.alchemy.com/v2/jsq6wNjd99yhzXglFbYyX_B7jOZpZe0i"
-
-# Drosera Relay
+ethereum_rpc = "ethereum_rpc"
 drosera_rpc = "https://relay.ethereum.drosera.io"
-
-# Drosera Mainnet Contract
 drosera_address = "0x01C344b8406c3237a6b9dbd06ef2832142866d87"
 
 [traps.suspicious_allowance_mainnet]
 
-path = "out/SuspiciousAllowanceTrapMainnet.sol/SuspiciousAllowanceTrapMainnet.json"
-
-# Response contract 
-response_contract = "0x9650910581cBbFa4f9B1E55d14339DDeAdC88d5C"
-
-# Response function signature 
+path = "out/SuspiciousAllowanceTrapMainnet.sol/SuspiciousAllowanceTrapMainnet.json" 
+response_contract = "0x9650910581cBbFa4f9B1E55d14339DDeAdC88d5C" 
 response_function = "executeAllowance(address,address,uint256,uint256)"
-
-# Trap configuration
 cooldown_period_blocks = 50
 min_number_of_operators = 3
 max_number_of_operators = 10
 block_sample_size = 5
 private_trap = true
-whitelist = ["0xC44F6deeFebBCcd68d7f82B75D375FD89170e968"]
-address = "0xD031EE9cda41d9e42B0D495E77d03188E5Dd300A"
+whitelist = ["your_wallet_address"]
+
