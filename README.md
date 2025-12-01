@@ -1,10 +1,10 @@
 # Suspicious Allowance Trap Mainnet
 
-> Production-ready Drosera security trap monitoring ANY suspicious USDC allowance increases on Ethereum mainnet.
+> Drosera security trap monitoring suspicious USDC allowance increases on Ethereum mainnet.
 
 ## What does the trap does
 
-This Trap is designed Monitors Vitalik Buterin's wallet for **ANY** suspicious USDC approval increases:
+This Trap is designed to Monitors Vitalik Buterin's wallet for **ANY** suspicious USDC approval increases:
 -  Tracks common DeFi contracts + unknown addresses
 -  Alerts on approvals ≥10,000 USDC to non-whitelisted spenders
 -  Catches phishing attacks, compromised wallets, and malicious approvals
@@ -34,7 +34,7 @@ Drosera Operators
 - Aave V2, V3
 - Compound
 
-## 📦 Installation
+## Getting started
 ```bash
 # Clone
 git clone https://github.com/Affanuu/suspicious-allowance-trap-mainnet.git
