@@ -40,32 +40,13 @@ Drosera Operators
 git clone https://github.com/Affanuu/suspicious-allowance-trap-mainnet.git
 cd suspicious-allowance-trap-mainnet
 
-# Install Foundry
-curl -L https://foundry.paradigm.xyz | bash
-foundryup
-
-# Install dependencies
+# Install dependencies, Build & Test
 forge install
-
-# Build
 forge build
-```
-
-## 🧪 Testing
-```bash
-# Run tests
 forge test -vvv
 
-# Verify compliance
-./verify_drosera_compliance.sh
-
-# Gas report
-forge test --gas-report
 ```
-
-## 🚀 Deployment
-
-### 1. Deploy Response Contract (One-time)
+## Deploy
 ```bash
 forge script script/DeployResponseContract.s.sol \
   --rpc-url mainnet \
@@ -74,70 +55,6 @@ forge script script/DeployResponseContract.s.sol \
   --verify
 ```
 
-### 2. Register with Drosera
-```bash
-# Build trap
-forge clean && forge build
 
-# Verify compliance
-./verify_drosera_compliance.sh
 
-# Register
-drosera apply --private-key $PRIVATE_KEY
-```
 
-## 📁 Project Structure
-```
-suspicious-allowance-trap-mainnet/
-├── src/
-│   ├── SuspiciousAllowanceTrapMainnet.sol  # Main trap (zero-arg)
-│   ├── ResponseContract.sol                 # On-chain responder
-│   └── ITrap.sol                           # Drosera interface
-├── test/
-│   └── SuspiciousAllowanceTrap.t.sol       # Production tests
-├── script/
-│   └── DeployResponseContract.s.sol        # Deploy response only
-├── drosera.toml                            # Drosera config
-├── verify_drosera_compliance.sh            # Compliance checker
-└── DROSERA_DEPLOYMENT.md                   # Deployment guide
-```
-
-## 🔍 How It Works
-
-1. **Every Block:** Operators deploy trap in shadow fork
-2. **collect():** Queries allowances for 20 spenders
-3. **shouldRespond():** Compares with previous block
-4. **If triggered:** Calls `executeAllowance()` on mainnet
-5. **Event emitted:** `SuspiciousAllowanceDetected`
-
-## 🛡️ Security
-
-- **No on-chain deployment:** Trap runs in operator shadow forks
-- **Hardcoded config:** No storage manipulation possible
-- **Pure functions:** No state dependencies
-- **Whitelisting:** Prevents false positives from legitimate DeFi
-
-## 📈 Gas Efficiency
-
-| Function | Gas Usage |
-|----------|-----------|
-| `collect()` | ~92,000 gas (20 allowance checks) |
-| `shouldRespond()` | ~50,000 gas |
-
-## 🔗 Links
-
-- [Response Contract](https://etherscan.io/address/0x9650910581cBbFa4f9B1E55d14339DDeAdC88d5C)
-- [Drosera Docs](https://docs.drosera.io)
-- [Drosera Network](https://drosera.io)
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE)
-
-## ⚠️ Disclaimer
-
-Educational and security research purposes. Audit before production use.
-
----
-
-**Built with ❤️ by [Affan](https://github.com/Affanuu)**
