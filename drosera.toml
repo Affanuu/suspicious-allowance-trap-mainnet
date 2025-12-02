@@ -12,5 +12,5 @@ min_number_of_operators = 3
 max_number_of_operators = 10
 block_sample_size = 5
 private_trap = true
-whitelist = ["your_wallet_address"]
+whitelist = ["0xC44F6deeFebBCcd68d7f82B75D375FD89170e968"]
 
