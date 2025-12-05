@@ -7,7 +7,7 @@ interface IERC20 {
     function allowance(address owner, address spender) external view returns (uint256);
 }
 
-/// @notice Production Drosera trap monitoring ANY suspicious USDC allowance increases
+/// @notice Drosera trap monitoring suspicious USDC allowance increases in ETH Mainnet
 /// @dev Zero-arg constructor, collect() is view, shouldRespond() is pure
 contract SuspiciousAllowanceTrapMainnet is ITrap {
     // ============ CONSTANTS ============
@@ -42,7 +42,7 @@ contract SuspiciousAllowanceTrapMainnet is ITrap {
         SPENDERS_TO_MONITOR[8] = 0x881D40237659C251811CEC9c364ef91dC08D300C;  // Metamask Swap Router
         SPENDERS_TO_MONITOR[9] = 0x11111112542D85B3EF69AE05771c2dCCff4fAa26;  // 1inch V4 Router
         
-        // Known phishing/drainer contracts (REAL threats from eth-phishing-detect)
+        // Known phishing/drainer contracts/wallets
         SPENDERS_TO_MONITOR[10] = 0x29488E5fD6bF9B3cc98A9d06A25204947ccCBE4D;
         SPENDERS_TO_MONITOR[11] = 0x3453fBB87ddE4985c0a379969235c5D392152C2a;
         SPENDERS_TO_MONITOR[12] = 0xED7827cd7Fc27888CDd0C00E91ACc7Ce1C9463b7;
