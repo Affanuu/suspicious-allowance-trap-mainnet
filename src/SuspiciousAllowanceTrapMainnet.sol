@@ -42,18 +42,17 @@ contract SuspiciousAllowanceTrapMainnet is ITrap {
         SPENDERS_TO_MONITOR[8] = 0x881D40237659C251811CEC9c364ef91dC08D300C;  // Metamask Swap Router
         SPENDERS_TO_MONITOR[9] = 0x11111112542D85B3EF69AE05771c2dCCff4fAa26;  // 1inch V4 Router
         
-        // Unknown/suspicious address slots (for catching NEW threats)
-        // Using proper checksummed addresses
-        SPENDERS_TO_MONITOR[10] = 0x0000000000000000000000000000000000000001;
-        SPENDERS_TO_MONITOR[11] = 0x0000000000000000000000000000000000000002;
-        SPENDERS_TO_MONITOR[12] = 0x0000000000000000000000000000000000000003;
-        SPENDERS_TO_MONITOR[13] = 0x0000000000000000000000000000000000000004;
-        SPENDERS_TO_MONITOR[14] = 0x0000000000000000000000000000000000000005;
-        SPENDERS_TO_MONITOR[15] = 0x0000000000000000000000000000000000000006;
-        SPENDERS_TO_MONITOR[16] = 0x0000000000000000000000000000000000000007;
-        SPENDERS_TO_MONITOR[17] = 0x0000000000000000000000000000000000000008;
-        SPENDERS_TO_MONITOR[18] = 0x0000000000000000000000000000000000000009;
-        SPENDERS_TO_MONITOR[19] = 0x000000000000000000000000000000000000000A;  // Correct checksum
+        // Known phishing/drainer contracts (REAL threats from eth-phishing-detect)
+        SPENDERS_TO_MONITOR[10] = 0x29488E5fD6bF9B3cc98A9d06A25204947ccCBE4D;
+        SPENDERS_TO_MONITOR[11] = 0x3453fBB87ddE4985c0a379969235c5D392152C2a;
+        SPENDERS_TO_MONITOR[12] = 0xED7827cd7Fc27888CDd0C00E91ACc7Ce1C9463b7;
+        SPENDERS_TO_MONITOR[13] = 0x293e6fA9505754d1e78e2C511d6126840b53DA9B;
+        SPENDERS_TO_MONITOR[14] = 0x0c46044f98EF99BC6960071D10aC69b7488Dd615;
+        SPENDERS_TO_MONITOR[15] = 0xc7aBA6484782Bb9e187A1dE73d50fFF649344Bb5;
+        SPENDERS_TO_MONITOR[16] = 0x000037bB05B2CeF17c6469f4BcDb198826Ce0000;
+        SPENDERS_TO_MONITOR[17] = 0x854dda621785DCA278df9b298825f2Ec32578B76;
+        SPENDERS_TO_MONITOR[18] = 0x0000553F880fFA3728b290e04E819053A3590000;
+        SPENDERS_TO_MONITOR[19] = 0x00001f78189bE22C3498cFF1B8e02272C3220000;
     }
 
     /// @notice Collect current allowances for all monitored spenders
@@ -103,38 +102,46 @@ contract SuspiciousAllowanceTrapMainnet is ITrap {
     /// @notice Analyze allowance changes and trigger on suspicious increases
     /// @dev Pure function - compares current vs previous block data
     function shouldRespond(bytes[] calldata data) external pure override returns (bool, bytes memory) {
+        // Guard 1: Require at least 2 data points
         if (data.length < 2) return (false, "");
-
-        // Decode current block data
+        
+        // Guard 2: Ensure data blobs are not empty
+        if (data[0].length < 96 || data[1].length < 96) return (false, "");
+        
+        // Guard 3: Decode data
         (address[] memory ownersC, address[] memory spendersC, uint256[] memory allowancesC) =
             abi.decode(data[0], (address[], address[], uint256[]));
         
-        // Decode previous block data
         (address[] memory ownersP, address[] memory spendersP, uint256[] memory allowancesP) =
             abi.decode(data[1], (address[], address[], uint256[]));
-
+        
+        // Guard 4: Validate array lengths match
         if (ownersC.length != ownersP.length) return (false, "");
+        if (spendersC.length != spendersP.length) return (false, "");
+        if (allowancesC.length != allowancesP.length) return (false, "");
+        if (ownersC.length != spendersC.length) return (false, "");
+        if (ownersC.length != allowancesC.length) return (false, "");
+        
+        // Guard 5: Ensure arrays are not empty
+        if (ownersC.length == 0) return (false, "");
         
         // Check each spender for suspicious allowance increases
         for (uint256 i = 0; i < ownersC.length; i++) {
-            // Verify we're comparing the same owner/spender pair
             if (ownersC[i] != ownersP[i] || spendersC[i] != spendersP[i]) {
                 continue;
             }
             
-            // Check if allowance increased
             if (allowancesC[i] > allowancesP[i]) {
                 uint256 delta = allowancesC[i] - allowancesP[i];
                 
-                // TRIGGER if: increase >= 10,000 USDC AND spender is NOT whitelisted
                 if (delta >= THRESHOLD && !isWhitelisted(spendersC[i])) {
                     return (
                         true, 
                         abi.encode(
-                            ownersC[i],      // owner (Vitalik)
-                            spendersC[i],    // suspicious spender
-                            allowancesP[i],  // previous allowance
-                            allowancesC[i]   // new allowance
+                            ownersC[i],
+                            spendersC[i],
+                            allowancesP[i],
+                            allowancesC[i]
                         )
                     );
                 }

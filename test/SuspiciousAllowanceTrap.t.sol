@@ -166,7 +166,7 @@ contract SuspiciousAllowanceTrapTest is Test {
         assertTrue(shouldRespond, "Should trigger on spender 3");
         
         // Verify it caught the correct spender
-        (address owner, address spender,,) = 
+        (, address spender,,) = 
             abi.decode(responseData, (address, address, uint256, uint256));
         
         assertEq(spender, 0x0000000000000000000000000000000000000002, "Should catch spender 3");
