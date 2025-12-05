@@ -7,7 +7,7 @@ interface IERC20 {
     function allowance(address owner, address spender) external view returns (uint256);
 }
 
-/// @notice Drosera trap monitoring suspicious USDC allowance increases in ETH Mainnet
+/// @notice Drosera trap monitoring suspicious USDC allowance increases on ETH Mainnet
 /// @dev Zero-arg constructor, collect() is view, shouldRespond() is pure
 contract SuspiciousAllowanceTrapMainnet is ITrap {
     // ============ CONSTANTS ============
